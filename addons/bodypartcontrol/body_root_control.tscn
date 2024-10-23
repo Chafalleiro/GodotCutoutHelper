@@ -1,0 +1,285 @@
+[gd_scene load_steps=5 format=3 uid="uid://c5c1qtunliec2"]
+
+[ext_resource type="Script" path="res://addons/bodypartcontrol/body_root_control.gd" id="1_tuxu7"]
+[ext_resource type="Texture2D" uid="uid://dd80xo8jil65a" path="res://addons/bodypartcontrol/icons/MoveLeft.svg" id="2_1pete"]
+[ext_resource type="Texture2D" uid="uid://bvuqgc870e44d" path="res://addons/bodypartcontrol/icons/Reload.svg" id="2_55t3d"]
+[ext_resource type="Texture2D" uid="uid://cpqdnseeesd57" path="res://addons/bodypartcontrol/icons/MoveRight.svg" id="3_6lbu2"]
+
+[node name="BodyRootControl" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_tuxu7")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="HBoxContainer"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+bbcode_enabled = true
+text = "[ul][font_size=18][b]Nodes Tab[/b][/font_size][/ul]
+[p align=justify]
+The plugin checks for compatible nodes, ATM only [b]BodyPartNode[/b] class is selectable.
+
+By default the list is filled with direct children of the [b]BodyPartRoot[/b] node, here you can add other nodes to be used.
+
+[b]Available nodes.[/b]
+Here is the list of all the BodyPartNode elements available excluding the active ones.
+
+[b]Active nodes.[/b]
+List of the activated nodes that can be used by the plugin actions.
+
+[b]Buttons \"<--\" and \"-->\".[/b]
+Activate or deactivate nodes. This setting is autosaved.
+[/p]
+
+[ul][font_size=18][b]Modify Actions Tab[/b][/font_size][/ul]
+[p align=justify]
+There are some directional actions available, but you can add custom actions to your own devices and scripts.
+
+[b]Available actions.[/b]
+Here is the list of all the actions available excluding the active ones.
+You can add new ones or delete selected actiones using the buttons at the bottom of the list.
+
+[b]Active Actions.[/b]
+List of the activated nodes that can be used by the plugin actions.
+
+[b]Buttons \"<--\" and \"-->\".[/b]
+Activate or deactivate actions.
+
+[b]Refresh Button.[/b]
+Will refresh the list of action in the nodes controlled by this root.
+
+[ul][font_size=18][b]Select Action Tab[/b][/font_size][/ul]
+[p align=justify]
+The main reason of this plugin. Here you select the set of sprites to load in the assigned nodes to be changed in the editor view.
+In this way you don't need to select each individual cutout piece every time you modify or update an animation.
+These actions can be used later to load the adequate sprites in game mode.
+More details are explained in the readme file and in the BodyPartNode bottom panels.
+
+[b]Change button.[/b]
+Change the Editor afected by this root node to show the selected action associated sprites.
+
+[/p]"
+
+[node name="TabContainer" type="TabContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+current_tab = 0
+clip_tabs = false
+
+[node name="Nodes" type="HBoxContainer" parent="HBoxContainer/TabContainer"]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="AvailNode" type="VBoxContainer" parent="HBoxContainer/TabContainer/Nodes"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/TabContainer/Nodes/AvailNode"]
+layout_mode = 2
+text = "Available nodes"
+horizontal_alignment = 1
+
+[node name="availNodeList" type="ItemList" parent="HBoxContainer/TabContainer/Nodes/AvailNode"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 3
+select_mode = 1
+
+[node name="RefresButton" type="Button" parent="HBoxContainer/TabContainer/Nodes/AvailNode"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Refresh"
+
+[node name="NodeChangers" type="VBoxContainer" parent="HBoxContainer/TabContainer/Nodes"]
+layout_mode = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="HBoxContainer/TabContainer/Nodes/NodeChangers"]
+modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="AddToActiveNodes" type="Button" parent="HBoxContainer/TabContainer/Nodes/NodeChangers"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+tooltip_text = "Move to active node list"
+icon = ExtResource("3_6lbu2")
+
+[node name="AddToAvailNodes" type="Button" parent="HBoxContainer/TabContainer/Nodes/NodeChangers"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+tooltip_text = "Remove from active list"
+icon = ExtResource("2_1pete")
+
+[node name="ActiveNodes" type="VBoxContainer" parent="HBoxContainer/TabContainer/Nodes"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/TabContainer/Nodes/ActiveNodes"]
+layout_mode = 2
+text = "Active nodes"
+
+[node name="activeNodeList" type="ItemList" parent="HBoxContainer/TabContainer/Nodes/ActiveNodes"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 3
+select_mode = 1
+
+[node name="Modify Actions" type="HBoxContainer" parent="HBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="AvailActions" type="VBoxContainer" parent="HBoxContainer/TabContainer/Modify Actions"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/TabContainer/Modify Actions/AvailActions"]
+layout_mode = 2
+text = "Available actions"
+horizontal_alignment = 1
+
+[node name="avaActionList" type="ItemList" parent="HBoxContainer/TabContainer/Modify Actions/AvailActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+size_flags_vertical = 3
+select_mode = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer/TabContainer/Modify Actions/AvailActions"]
+custom_minimum_size = Vector2(100, 25)
+layout_mode = 2
+alignment = 1
+
+[node name="AddActBtn" type="Button" parent="HBoxContainer/TabContainer/Modify Actions/AvailActions/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+text = "Add"
+
+[node name="RemActBtn" type="Button" parent="HBoxContainer/TabContainer/Modify Actions/AvailActions/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Remove"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/TabContainer/Modify Actions"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="PanelContainer" type="PanelContainer" parent="HBoxContainer/TabContainer/Modify Actions/VBoxContainer"]
+modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="MoveToAvailAct" type="Button" parent="HBoxContainer/TabContainer/Modify Actions/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+icon = ExtResource("2_1pete")
+
+[node name="MoveToActAct" type="Button" parent="HBoxContainer/TabContainer/Modify Actions/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+icon = ExtResource("3_6lbu2")
+
+[node name="ButtonRefreshActionList" type="Button" parent="HBoxContainer/TabContainer/Modify Actions/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+tooltip_text = "Refresh list oon Nodes"
+icon = ExtResource("2_55t3d")
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="HBoxContainer/TabContainer/Modify Actions"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/TabContainer/Modify Actions/VBoxContainer2"]
+layout_mode = 2
+text = "Active Actions"
+horizontal_alignment = 1
+
+[node name="actActionList" type="ItemList" parent="HBoxContainer/TabContainer/Modify Actions/VBoxContainer2"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+size_flags_horizontal = 2
+size_flags_vertical = 3
+select_mode = 1
+
+[node name="Select Action" type="VBoxContainer" parent="HBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/TabContainer/Select Action"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+text = "Select active sprite set"
+
+[node name="ActionOptions" type="OptionButton" parent="HBoxContainer/TabContainer/Select Action"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+item_count = 3
+popup/item_0/text = "uno"
+popup/item_1/text = "dot"
+popup/item_1/id = 1
+popup/item_2/text = "tret"
+popup/item_2/id = 2
+
+[node name="ButActions" type="Button" parent="HBoxContainer/TabContainer/Select Action"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Change"
+
+[node name="AcceptDialog" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Enter New Action"
+initial_position = 2
+size = Vector2i(400, 100)
+unresizable = true
+
+[node name="InputText" type="TextEdit" parent="AcceptDialog"]
+unique_name_in_owner = true
+process_priority = 1
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 392.0
+offset_bottom = 51.0
+placeholder_text = "Write new Action name"
+
+[connection signal="pressed" from="HBoxContainer/TabContainer/Nodes/NodeChangers/AddToActiveNodes" to="." method="_on_add_to_active_nodes_pressed"]
+[connection signal="pressed" from="HBoxContainer/TabContainer/Nodes/NodeChangers/AddToAvailNodes" to="." method="_on_add_to_avail_nodes_pressed"]
+[connection signal="pressed" from="HBoxContainer/TabContainer/Modify Actions/AvailActions/HBoxContainer/AddActBtn" to="." method="_on_add_act_btn_pressed"]
+[connection signal="pressed" from="HBoxContainer/TabContainer/Modify Actions/AvailActions/HBoxContainer/RemActBtn" to="." method="_on_rem_act_btn_pressed"]
+[connection signal="pressed" from="HBoxContainer/TabContainer/Modify Actions/VBoxContainer/MoveToAvailAct" to="." method="_on_move_to_avail_act_pressed"]
+[connection signal="pressed" from="HBoxContainer/TabContainer/Modify Actions/VBoxContainer/MoveToActAct" to="." method="_on_move_to_act_act_pressed"]
+[connection signal="pressed" from="HBoxContainer/TabContainer/Modify Actions/VBoxContainer/ButtonRefreshActionList" to="." method="_on_refresh_act_button_pressed"]
+[connection signal="item_selected" from="HBoxContainer/TabContainer/Select Action/ActionOptions" to="." method="_on_action_options_item_selected"]
+[connection signal="pressed" from="HBoxContainer/TabContainer/Select Action/ButActions" to="." method="_on_but_actions_pressed"]
+[connection signal="confirmed" from="AcceptDialog" to="." method="_on_accept_dialog_confirmed"]

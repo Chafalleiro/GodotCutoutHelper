@@ -30,6 +30,23 @@ Although not necesary, setting up a skeleton will help in the animation. You wil
 
 ### Tipical usage.
 
+You first have to add a BodyPartRoot node to store the necesary data.
+After that add BodyPartNodes to store and use the sprites that holds the cutout parts.
+
+In the Editor you can change the sprites using the Selection in the "Select Action" tab of the bottom panel used by BodyPartRoot ([CutoutRootControl]).
+
+At runtime you can change the sets of sprites grouped by actions calling the methods in root and nodes.
+
+Use **_BodyPartRoot.setNewSprites()_** to update all the nodes stored in nodes tab list.
+
+Use **_BodypartSpriteList.list_sprites.actAction_** stored actions. You can chek them in the bottom panel of the root node.
+
+### Usage:
+
+	 func some_function():
+
+	    $Name_Of_[BodyPartRoot]_setNewSprites(ActionFromACtAction, index)
+
 
 ### It has the current classes.
 Classes with usable nodes.

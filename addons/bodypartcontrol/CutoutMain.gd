@@ -6,7 +6,7 @@
 ## - A custom Sprite2D node wich holds ans process images for the cutout animation.[br]
 ## - A GUI for editing a AtlasTextures for each part and direction, similar to the SpriteFrames GUI.[br]
 ##
-## @tutorial:             https://example.com/tutorial_1
+## @Demo:             https://github.com/Chafalleiro/cutout-plugin-demo
 ## @tutorial(Tutorial 2): https://example.com/tutorial_2
 ## [br]
 ## It has the current classes.[br]

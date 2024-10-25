@@ -10,9 +10,9 @@ version=0.1
 
 ### [Godot Cutout Helper Demo Tutorial - YouTube](https://www.youtube.com/watch?v=-J1b2HQX02E)
 
-![img](C:\vhost\Repositorios\GodotCutoutHelper\node_panel.png)
-
 ![action_panel_anim.webp](action_panel_anim.webp)
+
+![Node Panel](node_panel.png)
 
 ### This plugin adds the following to the Editor:
 

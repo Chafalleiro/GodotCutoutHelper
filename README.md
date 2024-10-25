@@ -12,7 +12,7 @@ version=0.1
 
 ![img](C:\vhost\Repositorios\GodotCutoutHelper\node_panel.png)
 
-![action_panel_anim.webp](C:\vhost\Repositorios\GodotCutoutHelper\action_panel_anim.webp)
+![action_panel_anim.webp](action_panel_anim.webp)
 
 ### This plugin adds the following to the Editor:
 

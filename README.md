@@ -8,6 +8,8 @@ version=0.1
 
 ### [Demo tutorial](https://github.com/Chafalleiro/cutout-plugin-demo)
 
+[Video Tutorial]([Godot Cutout Helper Demo Tutorial - YouTube](https://www.youtube.com/watch?v=-J1b2HQX02E))
+
 ### This plugin adds the following to the Editor:
 
 - A custom node wich holds directions of the animation

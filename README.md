@@ -10,6 +10,10 @@ version=0.1
 
 [Video Tutorial]([Godot Cutout Helper Demo Tutorial - YouTube](https://www.youtube.com/watch?v=-J1b2HQX02E))
 
+![img](C:\vhost\Repositorios\GodotCutoutHelper\node_panel.png)
+
+![action_panel_anim.webp](C:\vhost\Repositorios\GodotCutoutHelper\action_panel_anim.webp)
+
 ### This plugin adds the following to the Editor:
 
 - A custom node wich holds directions of the animation

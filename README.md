@@ -8,11 +8,11 @@ version=0.1
 
 ### [Demo tutorial](https://github.com/Chafalleiro/cutout-plugin-demo)
 
-[Video Tutorial]([Godot Cutout Helper Demo Tutorial - YouTube](https://www.youtube.com/watch?v=-J1b2HQX02E))
+[Godot Cutout Helper Demo Tutorial - YouTube](https://www.youtube.com/watch?v=-J1b2HQX02E)
 
-![img](C:\vhost\Repositorios\GodotCutoutHelper\node_panel.png)
+![img](node_panel.png)
 
-![action_panel_anim.webp](C:\vhost\Repositorios\GodotCutoutHelper\action_panel_anim.webp)
+![action_panel_anim.webp](action_panel_anim.webp)
 
 ### This plugin adds the following to the Editor:
 

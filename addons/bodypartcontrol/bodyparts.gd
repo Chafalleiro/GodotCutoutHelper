@@ -43,6 +43,24 @@ var arrFiles = []
 var files = []
 var directories = []
 
+func _ready() -> void:
+	var file_name = "user://"+ self.get_parent().name +"_" + self.name + ".res"
+	list_sprites = loadRes(file_name)
+
+## Save the resorce to file. The file is named after the node using [BodypartSpriteList] resource.
+func saveRes():
+	var fileName = "user://"+ self.get_parent().name +"_" + self.name + ".res"
+	var result = ResourceSaver.save(list_sprites, fileName)
+	assert(result == OK)
+	return
+## Load the resorce from file.
+func loadRes(file_name):
+	if ResourceLoader.exists(file_name):
+		var res_list_sprites = ResourceLoader.load(file_name)
+		if res_list_sprites is BodyPartNodeRes: # Check that the data is valid
+			return res_list_sprites
+
+
 ## The fuction just changes the stored texture path, the other info stored is kept as is.
 ## if specified it will change the textures of all action in dictionary.
 func chng_text(dir, ndx, tex):
@@ -52,8 +70,11 @@ func chng_text(dir, ndx, tex):
 		dir = list_sprites.currentAction
 	var atlas_texture = AtlasTexture.new()
 	var tmp = self.list_sprites.actionDictionary[dir]
+	if ndx >= tmp.size():
+		AModiDel(dir, ndx, [tex, tmp[tmp.size() - 1][1]], "add")
+	else:
+		AModiDel(dir, ndx, [tex, tmp[ndx][1]], "mod")
 	atlas_texture.atlas = load(tex)
-	AModiDel(dir, ndx, [tex, tmp[ndx][1]], "mod")
 	return
 
 ## This function changes the texture of the node based on the first Action stored in [operator list_sprites.actionDictionary]
@@ -86,6 +107,7 @@ func AModiDel(key, ndx, dat, op):
 			self.list_sprites.actionDictionary[key].remove_at(int(ndx))
 		"mod":
 			self.list_sprites.actionDictionary[key][int(ndx)] = dat
+	saveRes()
 	return
 ##Check if Dictionary has some available (inactive)actions. If yes, erase the inactive from the dictionary.
 ##Check if Dictionary has all active actions. If not, add the non existing ones with default values.
@@ -96,5 +118,6 @@ func setActionsDict():
 				get_node(cutOut).list_sprites.actionDictionary.erase(act)
 		if not get_node(cutOut).list_sprites.actionDictionary.has_all(list_sprites.actAction):
 			for act in list_sprites.actAction:
-				get_node(cutOut).list_sprites.actionDictionary.get_or_add(act, [["res://addons/bodypartcontrol/icons/vga_64.png",Rect2(1,0,63,60)],["res://addons/bodypartcontrol/icons/favicon_yel.png",Rect2(1,0,63,60)]])
+				get_node(cutOut).list_sprites.actionDictionary.get_or_add(act, [["res://addons/bodypartcontrol/icons/vga_64.png",Rect2(1,0,63,60)],["res://addons/bodypartcontrol/icons/favicon_yel.png",Rect2(0,0,0,0)]])
+	saveRes()
 	return

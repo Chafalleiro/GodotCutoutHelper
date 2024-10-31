@@ -8,13 +8,19 @@ extends Control
 ## @experimental
 class_name CutoutRootControl
 signal a_list_changed(a_value)
+signal texture_change(a_value)
+signal skel_draw()
+signal skel_sels(arr)
+signal skel_act(arr)
 
 var itemsList = []
 var selected_action = 0
+var selected_file_action = 0
 
 ##Clear all lists and menus.
 func clear():
 	%ActionOptions.clear()
+	%ActionOptFiles.clear()
 	%availNodeList.clear()
 	%activeNodeList.clear()
 	%actActionList.clear()
@@ -29,9 +35,11 @@ func addActionList(arr_actions):
 	var selected_index := 0
 	for action in arr_actions:
 		%ActionOptions.add_item(action)
+		%ActionOptFiles.add_item(action)
 		index += 1
 	%ActionOptions.select(selected_index)
 	%ActionOptions.item_selected.emit(selected_index)
+	
 
 func populate_list(list_name, list_items):
 	var index := 0
@@ -87,17 +95,58 @@ func _on_rem_act_btn_pressed() -> void:
 		%avaActionList.remove_item(%avaActionList.get_selected_items()[tmp])
 	retItems(%avaActionList)
 
-func _on_accept_actions_pressed() -> void:
-	pass # Replace with function body.
-
-func _on_but_actions_pressed() -> void:
-	pass # Replace with function body.
-
 ##Add item and report changes in returnList to the [CutoutMain] script.
 func _on_accept_dialog_confirmed() -> void:
 	%avaActionList.add_item(%InputText.text)
 	retItems(%avaActionList)
 
-
 func _on_refresh_act_button_pressed() -> void:
 	retItems(%avaActionList)
+
+func _on_file_button_pressed() -> void:
+	%FileDialog.show()
+
+func _on_file_dialog_file_selected(path: String) -> void:
+	%FileList.text = path
+
+func _on_button_pressed() -> void:
+	var emitted = [%ActionOptFiles.get_item_text(%ActionOptFiles.get_selected()), %ActionSprite.value, %FileList.text]
+	if %FileList.text == "":
+		%AlertFile.dialog_text = "File is empty. Please pick a valid image file."
+		%AlertFile.show()
+	else:
+		var tex = AtlasTexture.new()
+		tex.atlas = load(emitted[2])
+		if tex.atlas && (tex.atlas is Texture2D):
+			texture_change.emit(emitted)
+		else:
+			%AlertFile.dialog_text = "File is not valid. Check if is a valid loaded resource or it's corrupt."
+			%AlertFile.show()
+
+func _on_skeletons_draw() -> void:
+	printt("_on_skeletons_draw()")
+	skel_draw.emit()
+
+func _on_skel_list_item_selected(index: int) -> void:
+	var skel = %SkelList.get_item_text(%SkelList.get_selected())
+	var act = %ActionSel.get_item_text(%ActionSel.get_selected())
+	_skeletons_draw(act,skel)
+
+func _on_action_sel_item_selected(index: int) -> void:
+	var skel = %SkelList.get_item_text(%SkelList.get_selected())
+	var act = %ActionSel.get_item_text(%ActionSel.get_selected())
+	_skeletons_draw(act,skel)
+
+func _skeletons_draw(act,skel) -> void:
+	%SkelShot.texture = load("res://addons/bodypartcontrol/tmpres/"+ skel + "_" + act + ".png")
+
+func _on_save_skel_pressed() -> void:
+	var skel = %SkelList.get_item_text(%SkelList.get_selected())
+	var act = %ActionSel.get_item_text(%ActionSel.get_selected())
+	skel_act.emit([skel,act,"save"])
+	
+
+func _on_load_skel_pressed() -> void:
+	var skel = %SkelList.get_item_text(%SkelList.get_selected())
+	var act = %ActionSel.get_item_text(%ActionSel.get_selected())
+	skel_act.emit([skel,act,"load"])

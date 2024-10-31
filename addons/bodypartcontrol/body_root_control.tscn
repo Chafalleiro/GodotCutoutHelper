@@ -72,15 +72,45 @@ More details are explained in the readme file and in the BodyPartNode bottom pan
 [b]Change button.[/b]
 Change the Editor afected by this root node to show the selected action associated sprites.
 
+[ul][font_size=18][b]Textures Tab[/b][/font_size][/ul]
+[p align=justify]
+Change textures in all the active nodes by action. The regions will not be updated, just the atlas. You can also add a new sprite to the action set, the region will be copied from the preceding sprite.
+The list will be temporal, every time the project is loaded the list will be blank.
+
+[b]Add image.[/b]
+The button open a file dialog, only already imported resorces in the project path are selectable. File tipes accepted are png, jpg, gif and webp.
+The path will be added to the list, then you can select one of the loaded paths to change the textures.
+
+[b]Select Action.[/b]
+Pick wich action in the active nodes will be updated with the new textures.
+
+[b]Select Set.[/b]
+Pick wich sprites will be updated with the new file. You can add a new sprite to the action.
+
+[b]Set Textures.[/b]
+After all selections are made you can change the textures by pressing this button. 
+Index is created based on the first node of the list. If it doesn't point to any existing sprite set, a new one will be created.
+No changes will be made if any previous selection option is empty.
+
+[ul][font_size=18][b]Skeletons Tab[/b][/font_size][/ul]
+[p align=justify]
+Save and load skeleton poses.
+If poses don't load try to click on Animation tree node, then the animation node and lastrly skeleton node. This will unlock the skeleton bones, for some reason having an animation node will lock the bones.
+
+After the skeleton is unlocked you can load a saved pose, or save a pose. Those poses are associated with actions. Loading a pose will help you in a blank animation, but if the animation has already keyed the bones, the pose will be overwritten by the animation values.
+
+When savig a pose, an screenshot of the node is taken, you can change the size and position of the picture in the \"zone\" eported variable ofthe node resources.
+
 [/p]"
 
 [node name="TabContainer" type="TabContainer" parent="HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-current_tab = 0
+current_tab = 2
 clip_tabs = false
 
 [node name="Nodes" type="HBoxContainer" parent="HBoxContainer/TabContainer"]
+visible = false
 layout_mode = 2
 metadata/_tab_index = 0
 
@@ -229,7 +259,6 @@ size_flags_vertical = 3
 select_mode = 1
 
 [node name="Select Action" type="VBoxContainer" parent="HBoxContainer/TabContainer"]
-visible = false
 layout_mode = 2
 metadata/_tab_index = 2
 
@@ -257,6 +286,155 @@ layout_mode = 2
 size_flags_horizontal = 4
 text = "Change"
 
+[node name="Textures" type="VBoxContainer" parent="HBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 3
+
+[node name="AlertFile" type="AcceptDialog" parent="HBoxContainer/TabContainer/Textures"]
+unique_name_in_owner = true
+initial_position = 4
+dialog_text = "File ref is empty, please select a file."
+
+[node name="Textures" type="HBoxContainer" parent="HBoxContainer/TabContainer/Textures"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="FileDialog" type="FileDialog" parent="HBoxContainer/TabContainer/Textures/Textures"]
+unique_name_in_owner = true
+title = "Open a File"
+initial_position = 5
+size = Vector2i(300, 250)
+min_size = Vector2i(300, 250)
+ok_button_text = "Open"
+file_mode = 0
+filters = PackedStringArray("*.png,*.webp,*.gif,*.jpg;Img Files")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/TabContainer/Textures/Textures"]
+layout_mode = 2
+
+[node name="FileList" type="LineEdit" parent="HBoxContainer/TabContainer/Textures/Textures/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 25)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+tooltip_text = "Texture that wiil be loaded"
+
+[node name="FileButton" type="Button" parent="HBoxContainer/TabContainer/Textures/Textures/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Pick texture files"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer/TabContainer/Textures/Textures/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="HBoxContainer/TabContainer/Textures/Textures/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/TabContainer/Textures/Textures/VBoxContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+tooltip_text = "Into wich action will the texture be loaded"
+mouse_filter = 1
+text = "Select Action"
+
+[node name="ActionOptFiles" type="OptionButton" parent="HBoxContainer/TabContainer/Textures/Textures/VBoxContainer/HBoxContainer/VBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+tooltip_text = "Into wich action will the texture be loaded"
+item_count = 3
+popup/item_0/text = "uno"
+popup/item_1/text = "dot"
+popup/item_1/id = 1
+popup/item_2/text = "tret"
+popup/item_2/id = 2
+
+[node name="VBoxContainer3" type="VBoxContainer" parent="HBoxContainer/TabContainer/Textures/Textures/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/TabContainer/Textures/Textures/VBoxContainer/HBoxContainer/VBoxContainer3"]
+layout_mode = 2
+text = "Select set"
+
+[node name="ActionSprite" type="SpinBox" parent="HBoxContainer/TabContainer/Textures/Textures/VBoxContainer/HBoxContainer/VBoxContainer3"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+tooltip_text = "Wich textures will be substitued. Or added."
+rounded = true
+update_on_text_changed = true
+
+[node name="Button" type="Button" parent="HBoxContainer/TabContainer/Textures"]
+custom_minimum_size = Vector2(150, 25)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+text = "Set textures"
+
+[node name="Skeletons" type="HBoxContainer" parent="HBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 4
+
+[node name="SkelShot" type="TextureRect" parent="HBoxContainer/TabContainer/Skeletons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(75, 75)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="vbx" type="VBoxContainer" parent="HBoxContainer/TabContainer/Skeletons"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer/TabContainer/Skeletons/vbx"]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="SkelSel" type="VBoxContainer" parent="HBoxContainer/TabContainer/Skeletons/vbx/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="Label" type="Label" parent="HBoxContainer/TabContainer/Skeletons/vbx/HBoxContainer/SkelSel"]
+layout_mode = 2
+text = "    Select Skeleton     "
+
+[node name="SkelList" type="OptionButton" parent="HBoxContainer/TabContainer/Skeletons/vbx/HBoxContainer/SkelSel"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ActSel" type="VBoxContainer" parent="HBoxContainer/TabContainer/Skeletons/vbx/HBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/TabContainer/Skeletons/vbx/HBoxContainer/ActSel"]
+layout_mode = 2
+text = "    Select Action    "
+
+[node name="ActionSel" type="OptionButton" parent="HBoxContainer/TabContainer/Skeletons/vbx/HBoxContainer/ActSel"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="HBoxContainer/TabContainer/Skeletons/vbx"]
+layout_mode = 2
+size_flags_horizontal = 4
+alignment = 1
+
+[node name="SaveSkel" type="Button" parent="HBoxContainer/TabContainer/Skeletons/vbx/HBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Save Skeleton Pose"
+
+[node name="LoadSkel" type="Button" parent="HBoxContainer/TabContainer/Skeletons/vbx/HBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Load Skeleton Pose"
+
 [node name="AcceptDialog" type="ConfirmationDialog" parent="."]
 unique_name_in_owner = true
 title = "Enter New Action"
@@ -282,4 +460,12 @@ placeholder_text = "Write new Action name"
 [connection signal="pressed" from="HBoxContainer/TabContainer/Modify Actions/VBoxContainer/ButtonRefreshActionList" to="." method="_on_refresh_act_button_pressed"]
 [connection signal="item_selected" from="HBoxContainer/TabContainer/Select Action/ActionOptions" to="." method="_on_action_options_item_selected"]
 [connection signal="pressed" from="HBoxContainer/TabContainer/Select Action/ButActions" to="." method="_on_but_actions_pressed"]
+[connection signal="file_selected" from="HBoxContainer/TabContainer/Textures/Textures/FileDialog" to="." method="_on_file_dialog_file_selected"]
+[connection signal="pressed" from="HBoxContainer/TabContainer/Textures/Textures/VBoxContainer/FileButton" to="." method="_on_file_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/TabContainer/Textures/Button" to="." method="_on_button_pressed"]
+[connection signal="draw" from="HBoxContainer/TabContainer/Skeletons/vbx" to="." method="_on_skeletons_draw"]
+[connection signal="item_selected" from="HBoxContainer/TabContainer/Skeletons/vbx/HBoxContainer/SkelSel/SkelList" to="." method="_on_skel_list_item_selected"]
+[connection signal="item_selected" from="HBoxContainer/TabContainer/Skeletons/vbx/HBoxContainer/ActSel/ActionSel" to="." method="_on_action_sel_item_selected"]
+[connection signal="pressed" from="HBoxContainer/TabContainer/Skeletons/vbx/HBoxContainer2/SaveSkel" to="." method="_on_save_skel_pressed"]
+[connection signal="pressed" from="HBoxContainer/TabContainer/Skeletons/vbx/HBoxContainer2/LoadSkel" to="." method="_on_load_skel_pressed"]
 [connection signal="confirmed" from="AcceptDialog" to="." method="_on_accept_dialog_confirmed"]

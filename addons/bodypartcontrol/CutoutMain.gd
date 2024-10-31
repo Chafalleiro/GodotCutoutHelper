@@ -5,9 +5,10 @@
 ## and can change the editor cutout parts to ease the animation.[br]
 ## - A custom Sprite2D node wich holds ans process images for the cutout animation.[br]
 ## - A GUI for editing a AtlasTextures for each part and direction, similar to the SpriteFrames GUI.[br]
-##
-## @Demo:             https://github.com/Chafalleiro/cutout-plugin-demo
-## @tutorial(Tutorial 2): https://example.com/tutorial_2
+##[br]
+## Demo:             https://github.com/Chafalleiro/cutout-plugin-demo
+## @tutorial(Demo in Github): https://github.com/Chafalleiro/cutout-plugin-demo
+## @tutorial(Video tutorial of Demo): https://www.youtube.com/watch?v=-J1b2HQX02E
 ## [br]
 ## It has the current classes.[br]
 ## Classes with usable nodes.[br]
@@ -147,10 +148,16 @@ func BodyRoot_control(edited_object):
 		cntrl.get_node("%ButActions").pressed.disconnect(self._act_button_pressed)
 		cntrl.get_node("%RefresButton").pressed.disconnect(self._ref_button_pressed)
 		cntrl.a_list_changed.disconnect(self._list_changed)
+		cntrl.texture_change.disconnect(self._tex_changed)
+		cntrl.skel_draw.disconnect(self._skel_draw)
+		cntrl.skel_act.disconnect(self._skel_act)
 	cntrl.get_node("%ButActions").pressed.connect(self._act_button_pressed)
 	cntrl.a_list_changed.connect(self._list_changed)
 	root_cntrl.sprites_changed.connect(self._root_actions_changed)
-	cntrl.get_node("%RefresButton").pressed.connect(self._ref_button_pressed)	
+	cntrl.get_node("%RefresButton").pressed.connect(self._ref_button_pressed)
+	cntrl.texture_change.connect(self._tex_changed)
+	cntrl.skel_draw.connect(self._skel_draw)
+	cntrl.skel_act.connect(self._skel_act)
 
 	##Fill lists of actions in bottom panel.
 	cntrl.clear()
@@ -222,14 +229,27 @@ func _list_changed(list_control):
 		root_cntrl.setActionsDict()
 	root_cntrl.saveRes()
 	return
+
 func _ref_button_pressed():
 	root_cntrl.refreshNodes()
-	cntrl.clearSome(["%activeNodeList","%availNodeList"])
+	cntrl.clearSome(["%activeNodeList","%availNodeList","%ActionOptFiles"])
 	cntrl.populate_list(cntrl.get_node("%activeNodeList"),root_cntrl.list_sprites.activeNode)
 	cntrl.populate_list(cntrl.get_node("%availNodeList"),root_cntrl.list_sprites.availNode)
 
 func _ref_node_act_pressed():
-	print("_ref_node_act_pressed")
 	cntrl.clear_list(cntrl.get_node("%nodeActionList"))
 	cntrl.clear_img_nodes()
 	cntrl.populate_list(cntrl.get_node("%nodeActionList"),node_cntrl.list_sprites.actionDictionary.keys())
+
+func _tex_changed(varArr):
+	root_cntrl.setNewText(varArr[0],varArr[1],varArr[2])
+
+func _skel_draw():
+	printt("_skel_changed")
+	root_cntrl.getSkel()
+	cntrl.clearSome(["%ActionSel","%SkelList"])
+	cntrl.populate_list(cntrl.get_node("%SkelList"),root_cntrl.list_sprites.skelDictionary.keys())
+	cntrl.populate_list(cntrl.get_node("%ActionSel"),root_cntrl.list_sprites.actAction)
+
+func _skel_act(arr):
+	root_cntrl.skelRedraw(arr)

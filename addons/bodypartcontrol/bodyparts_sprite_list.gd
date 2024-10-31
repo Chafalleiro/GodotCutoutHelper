@@ -59,3 +59,17 @@ class_name BodypartSpriteList
 		runningNodePaths = new_setting
 #		# Emit a signal when the property is changed.
 		changed.emit("runningNodePaths")
+
+## Dictionary to hold skeleton bones, positions abd rotations
+@export var skelDictionary = {}: # Creates an empty dictionary.
+	set(new_setting):
+		skelDictionary = new_setting
+		# Emit a signal when the property is changed.
+		changed.emit("skelDictionary")
+
+## Rect2 region for sizing screenshots.
+@export var zone: Rect2:
+	set(new_setting):
+		zone = new_setting
+		# Emit a signal when the property is changed.
+		changed.emit("zone")

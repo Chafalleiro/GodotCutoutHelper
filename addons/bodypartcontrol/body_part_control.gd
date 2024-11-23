@@ -12,6 +12,7 @@ class_name CutoutBottomPanelControl
 signal a_button_pressed(a_value)
 signal list_selected(a_value)
 signal texture_changed(key, ndx, dat, op)
+signal refresh(arr)
 
 var cnt_img = 0
 var cur_img = 0
@@ -34,17 +35,6 @@ func populate_list(list_name, list_items):
 		list_name.add_item(list_item)
 		selected_index = index
 		index += 1
-
-##Add sprites.
-func setTexture(strVar):
-	var atlas_texture = AtlasTexture.new()
-	atlas_texture.changed.connect(_on_resource_changed.bind(atlas_texture))
-	EditorInterface.edit_resource(atlas_texture)
-	atlas_texture.atlas = load("res://addons/bodypartcontrol/icons/favicon_red.png")
-	var arr = [atlas_texture.atlas.resource_path, atlas_texture.region]
-	createButton(%TexturesContainer.get_children().size(), arr)
-	texture_changed.emit(%nodeActionList.get_item_text(%nodeActionList.get_selected_items()[0]), 0, arr, "add")
-	return atlas_texture
 
 ##Add sprites from dictionary [BodyPartNodeRes].
 func parseKeys(arr: Array):
@@ -85,6 +75,7 @@ func createButton(ndx, values: Array):
 
 	button.set_modulate(Color(0.7,0.7,0.7,1))
 	%TexturesContainer.add_child(button)
+	return ndx
 
 func _button_pressed(textu,obj):
 	EditorInterface.edit_resource(textu)
@@ -110,17 +101,14 @@ func _on_add_image_pressed() -> void:
 	setTexture("strVar")
 
 func _on_delete_image_pressed() -> void:
-	for child in %TexturesContainer.get_children().size():
-		print(child)
 	for child in %TexturesContainer.get_children():
 		if child.is_pressed():
 #			print(%nodeActionList.get_item_text(%nodeActionList.get_selected_items()[0]))
-			texture_changed.emit(child.tooltip_text, child.texture_normal.resource_name, ["not needed"], "del")
 			child.queue_free()
-			list_selected.emit(child.tooltip_text)
+			refresh.emit(["img","del",child.tooltip_text, child.texture_normal.resource_name])
 
 func _on_node_action_list_item_selected(index: int) -> void:
-	list_selected.emit(%nodeActionList.get_item_text(index))
+	refresh.emit(["img","sel",%nodeActionList.get_item_text(index)])
 
 func on_inspector_edited_object_changed() -> void:
 	#print("Woks at clicling button")
@@ -138,8 +126,31 @@ func on_inspector_multiple_properties_changed():
 func on_inspector_property_edited(prop):
 	var edited_object = EditorInterface.get_inspector().get_edited_object()
 	if edited_object is AtlasTexture:
-		texture_changed.emit(%nodeActionList.get_item_text(%nodeActionList.get_selected_items()[0]), edited_object.resource_name, [edited_object.atlas.resource_path, edited_object.region], "mod")
+		refresh.emit(["img","mod",
+		%nodeActionList.get_item_text(%nodeActionList.get_selected_items()[0]),
+		edited_object.resource_name,
+		[edited_object.atlas.resource_path, edited_object.region]
+		])
 
 func _on_resource_changed(what):
 	var edited_object = EditorInterface.get_inspector().get_edited_object()
-	texture_changed.emit(%nodeActionList.get_item_text(%nodeActionList.get_selected_items()[0]), what.resource_name, [what.atlas.resource_path, what.region], "mod")
+
+	refresh.emit(["img","mod",
+	%nodeActionList.get_item_text(%nodeActionList.get_selected_items()[0]),
+	what.resource_name,
+	[what.atlas.resource_path, what.region]
+	])
+
+##Add sprites.
+func setTexture(strVar):
+	var atlas_texture = AtlasTexture.new()
+	EditorInterface.edit_resource(atlas_texture)
+	atlas_texture.atlas = load("res://addons/bodypartcontrol/icons/favicon_red.png")
+	var arr = [atlas_texture.atlas.resource_path, atlas_texture.region]
+	var ndx  = await createButton(%TexturesContainer.get_children().size(), arr)
+	texture_changed.emit(%nodeActionList.get_item_text(%nodeActionList.get_selected_items()[0]), ndx, arr, "add")
+	refresh.emit(["img","add",%nodeActionList.get_item_text(%nodeActionList.get_selected_items()[0]), ndx, arr])
+	return atlas_texture
+
+func _on_h_split_container_draw() -> void:
+	refresh.emit(["main","rfrs"])

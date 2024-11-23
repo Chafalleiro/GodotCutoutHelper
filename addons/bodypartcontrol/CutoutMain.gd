@@ -56,8 +56,11 @@ var bottom_panel_root_control: Control
 
 ##Vars to manipulate control nodes that hold resorces.
 var root_cntrl: BodyPartRoot = null
+##Vars to manipulate control nodes that hold resorces.
 var node_cntrl: BodyPartNode = null
+##Vars to manipulate control nodes that hold resorces.
 var cntrl
+##Vars to manipulate control nodes that hold resorces.
 var btn
 ## Initialization of the plugin scenes, scripts and nodes goes here.
 func _enter_tree():
@@ -78,6 +81,7 @@ func _enter_tree():
 	)
 	#self.set_disable_class_editor(CutOutMain, true)
 	#set_disable_class(CutOutMain, true)
+
 func _exit_tree():
 	# Clean-up of the plugin goes here.
 	# Always remember to remove it from the engine when deactivated.
@@ -129,6 +133,54 @@ func on_inspector_edited_object_changed():
 		BodyNode_control(edited_object)
 	update_bottom_panel(cntrl, btn, edited_object)
 
+##Manipulate the [BodyPartNode] and [CutoutBottomPanelControl].
+func BodyNode_control(edited_object):
+#Connect [CutoutBottomPanelControl] signals
+	node_cntrl = edited_object as BodyPartNode
+#	if cntrl.list_selected.is_connected(_node_actions_changed):
+	if cntrl.refresh.is_connected(_node_changes):
+#		cntrl.list_selected.disconnect(_node_actions_changed)
+		cntrl.refresh.disconnect(_node_changes)
+#		cntrl.texture_changed.disconnect(_node_text_changed)
+#	cntrl.list_selected.connect(_node_actions_changed)
+	cntrl.refresh.connect(_node_changes)
+#	cntrl.texture_changed.connect(_node_text_changed)
+	refresh_node_panel()
+
+func _node_changes(anArr):
+	match anArr[0]:
+		"main":
+			match anArr[1]:
+				"rfrs":
+					refresh_node_panel()
+		"img":
+			match anArr[1]:
+				"sel":
+					_node_actions_changed(anArr[2])
+				"add":
+					_node_tex_changed(anArr[2],anArr[3],anArr[4],anArr[1])
+				"del":
+					_node_tex_changed(anArr[2],anArr[3],anArr[0],anArr[1])
+				"mod":
+					_node_tex_changed(anArr[2],anArr[3],anArr[4],anArr[1])
+
+	return
+func refresh_node_panel():
+	cntrl.clear_list(cntrl.get_node("%nodeActionList"))
+	cntrl.clear_img_nodes()
+	if node_cntrl.list_sprites:
+		cntrl.populate_list(cntrl.get_node("%nodeActionList"),node_cntrl.list_sprites.actionDictionary.keys())
+	return
+
+##selectKey is the list item name selected, it correspond to a key in [member BodyPartNode.list_sprites.actionDictionary]
+func _node_actions_changed(selectKey):
+	cntrl.clear_img_nodes()
+	cntrl.parseKeys(node_cntrl.list_sprites.actionDictionary[selectKey])
+	
+##Pass array and actions to edit dicionary.
+func _node_tex_changed(key, ndx, dat, act):
+	node_cntrl.AModiDel(key, ndx, dat, act)
+
 ## See body_root_control.gd or [CutoutRootControl]
 ##BodypartsRoot has a script associated and a signal, actions changed
 ##_root_actions_changed receives the var emited by the signal
@@ -142,114 +194,117 @@ func BodyRoot_control(edited_object):
 	btn = self.bottom_panel_root_button
 
 	##Connect to to signals in resources.
+	if cntrl.refresh.is_connected(_root_panel_chg):
+		cntrl.refresh.disconnect(_root_panel_chg)
 	if root_cntrl.sprites_changed.is_connected(_root_actions_changed):
 		root_cntrl.sprites_changed.disconnect(_root_actions_changed)
-		##Also check body_root_control scene for signals there
-		cntrl.get_node("%ButActions").pressed.disconnect(self._act_button_pressed)
-		cntrl.get_node("%RefresButton").pressed.disconnect(self._ref_button_pressed)
-		cntrl.a_list_changed.disconnect(self._list_changed)
-		cntrl.texture_change.disconnect(self._tex_changed)
-		cntrl.skel_draw.disconnect(self._skel_draw)
-		cntrl.skel_act.disconnect(self._skel_act)
-	cntrl.get_node("%ButActions").pressed.connect(self._act_button_pressed)
-	cntrl.a_list_changed.connect(self._list_changed)
-	root_cntrl.sprites_changed.connect(self._root_actions_changed)
-	cntrl.get_node("%RefresButton").pressed.connect(self._ref_button_pressed)
-	cntrl.texture_change.connect(self._tex_changed)
-	cntrl.skel_draw.connect(self._skel_draw)
-	cntrl.skel_act.connect(self._skel_act)
+	#root_cntrl.sprites_changed.connect(_root_actions_changed)
+	cntrl.refresh.connect(_root_panel_chg)
 
-	##Fill lists of actions in bottom panel.
-	cntrl.clear()
-	cntrl.populate_list(cntrl.get_node("%actActionList"),root_cntrl.list_sprites.actAction)
+## Refresh root panel and data.
+func _root_panel_chg(anArr):
+	match anArr[0]:
+		"node":
+			match anArr[1]:
+				"refr":
+					root_cntrl.refreshNodes()
+					_refresh(["%activeNodeList","%availNodeList",root_cntrl.list_sprites.activeNode,root_cntrl.list_sprites.availNode])
+				"chng":
+					_list_changed(anArr)
+		"acti":
+			match anArr[1]:
+				"refr":
+					_refresh(["%avaActionList","%actActionList",root_cntrl.list_sprites.avaAction,root_cntrl.list_sprites.actAction])
+				"chng":
+					_list_changed(anArr)
+				"add":
+					_list_mod(anArr)
+				"del":
+					_list_mod(anArr)
+		"seac":
+			match anArr[1]:
+				"refr":
+					_ref_skel(["%ActionOptions","%SkelPose"])
+		"text":
+			match anArr[1]:
+				"refr":
+					_ref_sel("%ActionOptFiles")
+				"chng":
+					_text_chng(anArr)
+		"skel":
+			if anArr[1] == "refr":
+				_ref_skel(["%ActionSel","%SkelList"])
+			else:
+				_mod_skel(anArr)
+		"pose":
+				root_cntrl.skelRedraw([anArr[2][0],anArr[2][1],anArr[1]])
+				root_cntrl.setNewSprites(anArr[2][1],anArr[2][2])
+	self.root_cntrl.setActionsDict()
+	return
+
+##Change textures in nodes.
+func _text_chng(arr):
+	root_cntrl.setNewText(arr[2][0],arr[2][1],arr[2][2])
+
+##Change root data from bottom panel.
+func _list_changed(list_control):
+	#Some lazy coding using the naming of nodes and resources
+	var tmp = list_control[2].name.trim_suffix("List")
+	#avaActionList
+	var tmpArr = []
+	for item in list_control[2].get_item_count():
+		tmpArr.append(list_control[2].get_item_text(item))
+	root_cntrl.clearArr(root_cntrl.list_sprites.get(tmp))
+	root_cntrl.fillArray(tmpArr,root_cntrl.list_sprites.get(tmp))
+
+	tmp = list_control[3].name.trim_suffix("List")
+	tmpArr = []
+	for item in list_control[3].get_item_count():
+		tmpArr.append(list_control[3].get_item_text(item))
+	self.root_cntrl.clearArr(root_cntrl.list_sprites.get(tmp))
+	self.root_cntrl.fillArray(tmpArr,root_cntrl.list_sprites.get(tmp))
+	self.root_cntrl.initPaths()
+
+	if "Action" in list_control[2].name:
+		self.cntrl.get_node("%ActionOptions").clear()
+		self.cntrl.addActionList(root_cntrl.list_sprites.actAction)
+	self.root_cntrl.saveRes()
+	return
+
+##Modify list in panel.
+func _list_mod(list_control):
+	var tmpArr = []
+	var tmp = list_control[2].name.trim_suffix("List")
+	for item in list_control[2].get_item_count():
+		tmpArr.append(list_control[2].get_item_text(item))
 	cntrl.populate_list(cntrl.get_node("%avaActionList"),root_cntrl.list_sprites.avaAction)
-	cntrl.addActionList(root_cntrl.list_sprites.actAction)
-	
-	#Get children of this BodyRootNode to fill the Active array if empty.
-	#A temporal array
-	
-	if root_cntrl.list_sprites.listSprite == null || root_cntrl.list_sprites.listSprite.size() == 0:
-		root_cntrl.initArrays()
-		cntrl.populate_list(cntrl.get_node("%activeNodeList"),root_cntrl.list_sprites.activeNode)
-		cntrl.populate_list(cntrl.get_node("%availNodeList"),root_cntrl.list_sprites.availNode)
-		root_cntrl.saveRes()
-	else:
-		_ref_button_pressed()
 
-##Manipulate the [BodyPartNode] and [CutoutBottomPanelControl].
-func BodyNode_control(edited_object):
-#Connect [CutoutBottomPanelControl] signals
-	node_cntrl = edited_object as BodyPartNode
-	if cntrl.list_selected.is_connected(_node_actions_changed):
-		cntrl.list_selected.disconnect(_node_actions_changed)
-		cntrl.texture_changed.disconnect(_node_text_changed)
-	cntrl.list_selected.connect(_node_actions_changed)
-	cntrl.texture_changed.connect(_node_text_changed)
+## Refresh actions selection in panel.
+func _ref_sel(what):
+	cntrl.clearSome([what])
+	cntrl.populate_list(cntrl.get_node(what),root_cntrl.list_sprites.actAction)
 
-	cntrl.clear_list(cntrl.get_node("%nodeActionList"))
-	cntrl.clear_img_nodes()
-	if node_cntrl.list_sprites:
-		cntrl.populate_list(cntrl.get_node("%nodeActionList"),node_cntrl.list_sprites.actionDictionary.keys())
+## Refresh lists in panel.
+func _refresh(arr):
+	cntrl.clearSome([arr[0],arr[1]])
+	cntrl.populate_list(cntrl.get_node(arr[0]),arr[2])
+	cntrl.populate_list(cntrl.get_node(arr[1]),arr[3])
+
+## Refresh skeletons in panel. Also refresh screenshots.
+func _ref_skel(what):
+	root_cntrl.getSkel()
+	cntrl.clearSome(what)
+	cntrl.populate_list(cntrl.get_node(what[0]),root_cntrl.list_sprites.actAction)
+	cntrl.populate_list(cntrl.get_node(what[1]),root_cntrl.list_sprites.skelDictionary.keys())
+	get_editor_interface().get_resource_filesystem().scan_sources()
+
+## Mod skeletons in root. Also refresh screenshots.
+func _mod_skel(arr):
+	get_editor_interface().get_resource_filesystem().scan_sources()
+	root_cntrl.skelRedraw([arr[2],arr[3],arr[1]])
 
 ##arr_actions receives the name of the array used in BodyPartRoot ListSprites resource.
 func _root_actions_changed(actionsArr):
 	cntrl.clear()
 	cntrl.addActionList(actionsArr)
 	root_cntrl.saveRes()
-
-##selectKey is the list item name selected, it correspond to a key in [member BodyPartNode.list_sprites.actionDictionary]
-func _node_actions_changed(selectKey):
-	cntrl.clear_img_nodes()
-	cntrl.parseKeys(node_cntrl.list_sprites.actionDictionary[selectKey])
-	
-##Pass array and actions to edit dicionary.
-func _node_text_changed(key, ndx, dat, act):
-	node_cntrl.AModiDel(key, ndx, dat, act)
-
-##Action pressed, change nodes in Editor.
-func _act_button_pressed():
-	root_cntrl.setNewSprites(cntrl.get_node("%ActionOptions").get_item_text(cntrl.get_node("%ActionOptions").get_selected_id()),0)
-
-##list_control receives the list used in body_root_control(bottom panel).
-func _list_changed(list_control):
-	print("_list_changed(list_control):")
-	#Some lazy coding using the naming of nodes and resources
-	var tmp = list_control.name.trim_suffix("List")
-	#avaActionList
-	var tmpArr = []
-	for item in list_control.get_item_count():
-		tmpArr.append(list_control.get_item_text(item))
-	root_cntrl.clearArr(root_cntrl.list_sprites.get(tmp))
-	root_cntrl.fillArray(tmpArr,root_cntrl.list_sprites.get(tmp))
-	root_cntrl.initPaths(root_cntrl.list_sprites.activeNode)
-	
-	if "Action" in list_control.name:
-		cntrl.get_node("%ActionOptions").clear()
-		cntrl.addActionList(root_cntrl.list_sprites.actAction)
-		root_cntrl.setActionsDict()
-	root_cntrl.saveRes()
-	return
-
-func _ref_button_pressed():
-	root_cntrl.refreshNodes()
-	cntrl.clearSome(["%activeNodeList","%availNodeList","%ActionOptFiles"])
-	cntrl.populate_list(cntrl.get_node("%activeNodeList"),root_cntrl.list_sprites.activeNode)
-	cntrl.populate_list(cntrl.get_node("%availNodeList"),root_cntrl.list_sprites.availNode)
-
-func _ref_node_act_pressed():
-	cntrl.clear_list(cntrl.get_node("%nodeActionList"))
-	cntrl.clear_img_nodes()
-	cntrl.populate_list(cntrl.get_node("%nodeActionList"),node_cntrl.list_sprites.actionDictionary.keys())
-
-func _tex_changed(varArr):
-	root_cntrl.setNewText(varArr[0],varArr[1],varArr[2])
-
-func _skel_draw():
-	printt("_skel_changed")
-	root_cntrl.getSkel()
-	cntrl.clearSome(["%ActionSel","%SkelList"])
-	cntrl.populate_list(cntrl.get_node("%SkelList"),root_cntrl.list_sprites.skelDictionary.keys())
-	cntrl.populate_list(cntrl.get_node("%ActionSel"),root_cntrl.list_sprites.actAction)
-
-func _skel_act(arr):
-	root_cntrl.skelRedraw(arr)

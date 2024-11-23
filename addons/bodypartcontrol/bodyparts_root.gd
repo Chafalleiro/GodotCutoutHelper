@@ -24,14 +24,15 @@ signal nodes_changed(a_value,b_value)
 		update_configuration_warnings()
 
 func _on_resource_changed(what):
-	print("My list sprites just changed in node!")
-	print(list_sprites.get(what))
+	printt("My list sprites just changed in root!", what)
 	sprites_changed.emit(what)
 
 func _get_configuration_warnings() -> PackedStringArray:
 	var warnings = []
 	if not list_sprites:
 		warnings.append("There is not a List Sprites resource.\n Please create one BodypartSpriteList in the Inspector Panel")
+	elif list_sprites.listSprite.size() == 0:
+		warnings.append("There is no BodyPartNode detected.\n Please create one BodyPartNode or refresh the list.")
 	return warnings
 
 func _on_resource_set():
@@ -39,16 +40,22 @@ func _on_resource_set():
 		print("My resource ROOT was SET!")
 	else:
 		print("My resource ROOT was CLEARED!")
+	update_configuration_warnings()
 
 ## Called when the node enters the scene tree for the first time.[br]
 ## It's called when the program is run or compiled. Since Paths are different in editor and run environment, a function is called here to sstore them in separate arrays.
 func _ready() -> void:
-	printt("self.owner",self.owner)
-	if (list_sprites.runningNodePaths.size() == 0) || (list_sprites.runningNodePaths.size() != list_sprites.editorNodePaths.size()):
-	#if self.list_sprites.runningNodePaths.size() == 0:
-		list_sprites = loadRes("user://"+ self.name + ".res")
-		initPaths(list_sprites.activeNode)
+	if list_sprites:
+		list_sprites = await loadRes("res://cutouts/"+ self.name + ".res")
+		if list_sprites.runningNodePaths.size() == 0:
+			initPaths()
+		update_configuration_warnings()
+	else:
+		printt("list_sprites doesn't exist")
+		list_sprites = BodypartSpriteList.new()
+		initArrays()
 		saveRes()
+		update_configuration_warnings()
 
 ## Clear the array determined by the function parameter.
 func clearArr(resourceArr):
@@ -61,22 +68,37 @@ func fillArray(passedArray,destArray):
 
 ## Save the resorce to file. The file is named after the node using [BodypartSpriteList] resource.
 func saveRes():
-	var fileName = "user://"+ self.name + ".res"
-	print("SAVED " + fileName)
+	print("Saving Root!")
+	var path = "res://cutouts/"
+	var dir = DirAccess.make_dir_absolute(path)
+	if not dir:
+		print("Creaint DIR Root!")
+		dir = DirAccess.make_dir_absolute(path)
+		
+	var fileName = "res://cutouts/"+ self.name + ".res"
 	var result = ResourceSaver.save(list_sprites, fileName)
 	assert(result == OK)
 	return
+
 ## Load the resorce from file.
 func loadRes(file_name):
+	print("Loading Root!")
 	if ResourceLoader.exists(file_name):
 		var res_list_sprites = ResourceLoader.load(file_name)
 		if res_list_sprites is BodypartSpriteList: # Check that the data is valid
 			return res_list_sprites
+	else:
+		printt("File ",file_name, "doesn't exist.")
+		var ret = "FOE"
+		return ret
+
+#NODES##NODES##NODES##NODES##NODES##NODES##NODES##NODES##NODES##NODES##NODES#
+#NODES##NODES##NODES##NODES##NODES##NODES##NODES##NODES##NODES##NODES##NODES#
 
 ## Create an array of references of the active [BodyPartNode] paths. See first tab of
 ## Paths are different in Editor or when running the game.
 ## When the game is ran we store the paths from.
-func initPaths(nodes):
+func initPaths():
 	var tArr = getAllNodes("paths")
 	var mTmp = []
 	for el in tArr:
@@ -84,44 +106,116 @@ func initPaths(nodes):
 			mTmp.append(el)
 	tArr = mTmp
 	if Engine.is_editor_hint():##Running in the Editor
-	#list_sprites.SpriteList.append(child.name)
 		clearArr(list_sprites.editorNodePaths)
 		fillArray(tArr,list_sprites.editorNodePaths)
 		return
 	if not Engine.is_editor_hint():##Running outside the Editor
 		clearArr(list_sprites.runningNodePaths)
 		fillArray(tArr,list_sprites.runningNodePaths)
+		saveRes()
 		return
 
 ## Initialize and save the arrays in [BodypartSpriteList] with defaults.
 func initArrays():
 	var tArr = []
-	var tmp = self.get_parent()
-	var tmpAnt = self.get_parent()
 	for child in self.get_children():
 		if child is BodyPartNode:
 			tArr.append(child.name)
-
-	if list_sprites.listSprite.size() == 0:
-		fillArray(tArr,list_sprites.listSprite)
 	if list_sprites.activeNode.size() == 0:
 		fillArray(tArr,list_sprites.activeNode)
-
 	#Get uppermost parent thet is a Node2D
 	tArr = getAllNodes("names")
+	if list_sprites.listSprite.size() == 0:
+		fillArray(tArr,list_sprites.listSprite)
 	var mTmp = []
 	for ele in tArr:
 		if not list_sprites.activeNode.has(ele):
 			mTmp.append(ele)
 	tArr = mTmp
-
-#	tArr = mTmptrimEx(tArr, list_sprites.activeNode)
 	if list_sprites.availNode.size() == 0:
 		fillArray(tArr,list_sprites.availNode)
 	if list_sprites.editorNodePaths.size() == 0:
-		initPaths(list_sprites.activeNode)
+		initPaths()
 	getSkel()
+	update_configuration_warnings()
+
+## Refresh list of nodes used by plugin. BodyPartNode and skeletons are stored.
+## Saves the resource.
+func refreshNodes():
+#Get all the BodypartNode names
+	var tArr = getAllNodes("nodes")
+	var tArrAll = tArr
+#Trim existent node names in avail list
+	tArr = trimExNode(tArr, list_sprites.availNode)
+#Trim existent node names in active list
+	tArr = trimExNode(tArr, list_sprites.activeNode)
+
+	if tArr.size() != 0:
+		for el in tArr:
+			print("New nodes found!")# Then we add the new nodes.
+			list_sprites.listSprite.append(el.name)
+			setActionsDict()
+			if el.get_parent() == self:
+				list_sprites.activeNode.append(el.name)
+			else:
+				list_sprites.availNode.append(el.name)
+	else:
+		print("NO new nodes found!")
+		tArr = getAllNodes("names")
+		tArrAll = tArr
+		tArr = trimNotNode(list_sprites.activeNode, tArr)
+		clearArr(list_sprites.activeNode)
+		fillArray(tArr,list_sprites.activeNode)
+		tArr = trimNotNode(list_sprites.availNode, tArrAll)
+		clearArr(list_sprites.availNode)
+		fillArray(tArr,list_sprites.availNode)
+	getSkel()
+	initPaths()
 	saveRes()
+	update_configuration_warnings()
+	return
+
+## Traverse nodes of this scene, return values as arrays of nodes, paths, names or skeleton nodes.
+## Keywords are "skel", "names", "paths" and "nodes".
+func getAllNodes(sw):
+	var tArr = []
+	if sw == "skel":
+		tArr = getSkel()
+	else:
+		for el in self.owner.find_children("*","BodyPartNode"):
+			match sw:
+				"names":
+					tArr.append(el.name)
+				"paths":
+					tArr.append(el.get_path())
+				"nodes":
+					tArr.append(el)	
+	return tArr
+
+##Trim elements of arr that already are in com and
+##Return the trimmed array.
+func trimExNode(arr, com):
+	var mTmp: Array[Node]
+	for ele in arr:
+		if not com.has(ele.name):
+			mTmp.append(ele)
+	return mTmp
+
+##Trim elements of arr that aren't in com.
+##Return the trimmed array.
+func trimNotNode(arr, com):
+#tArr = trimNotNode(list_sprites.activeNode, tArrAll)	
+	var mTmp: Array
+	for ele in arr:
+		if com.has(ele):
+			mTmp.append(ele)
+	return mTmp
+
+#NODES##NODES##NODES##NODES##NODES##NODES##NODES##NODES##NODES##NODES##NODES#
+#NODES##NODES##NODES##NODES##NODES##NODES##NODES##NODES##NODES##NODES##NODES#
+
+#ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS#
+#ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS#
 
 ##Check if Dictionary has some available (inactive)actions. If yes, erase the inactive from the dictionary.
 ##Check if Dictionary has all active actions. If not, add the non existing ones with default values.
@@ -132,9 +226,11 @@ func setActionsDict():
 				get_node(cutOut).list_sprites.actionDictionary.erase(act)
 		if not get_node(cutOut).list_sprites.actionDictionary.has_all(list_sprites.actAction):
 			for act in list_sprites.actAction:
-				get_node(cutOut).list_sprites.actionDictionary.get_or_add(act, [["res://addons/bodypartcontrol/icons/vga_64.png",Rect2(0,0,0,0)],["res://addons/bodypartcontrol/icons/favicon_yel.png",Rect2(0,0,0,0)]])
-	getSkel()
+				get_node(cutOut).list_sprites.actionDictionary.get_or_add(act, [[get_node(cutOut).texture.atlas.resource_path,get_node(cutOut).texture.region]])
+		get_node(cutOut).saveRes()
 	return
+#ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS#
+#ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS##ACTIONS#
 
 ## The fuction just changes the stored texture path, the other info stored is kept as is.
 ## if specified it will change the textures of all action in dictionary.
@@ -158,70 +254,6 @@ func setNewSprites(dir,ndx):
 	for nod in arrTmp:
 		get_node(nod).chng_sprt(dir,ndx)
 
-##Trim elements of arr that already are in com and
-##Return the trimmed array.
-func trimExNode(arr, com):
-	var mTmp: Array[Node]
-	for ele in arr:
-		if not com.has(ele.name):
-			mTmp.append(ele)
-	return mTmp
-
-##Trim elements of arr that aren't in com.
-##Return the trimmed array.
-func trimNotNode(arr, com):
-#tArr = trimNotNode(list_sprites.activeNode, tArrAll)	
-	var mTmp: Array
-	for ele in arr:
-		if com.has(ele):
-			mTmp.append(ele)
-	return mTmp
-
-func refreshNodes():
-	var tArr = getAllNodes("nodes")
-	#tArr = getAllNodes("nodes")
-	var tArrAll = tArr
-#Get all the BodypartNode names
-#Trim existent node names in avail list
-	tArr = trimExNode(tArr, list_sprites.availNode)
-#Trim existent node names in active list
-	tArr = trimExNode(tArr, list_sprites.activeNode)
-
-	if tArr.size() != 0:
-		for el in tArr:
-			print("New nodes found!")# Then we add the new nodes.
-			if el.get_parent() == self:
-				list_sprites.activeNode.append(el.name)
-			else:
-				list_sprites.availNode.append(el.name)
-	else:
-		print("NO new nodes found!")
-		tArr = getAllNodes("names")
-		tArrAll = tArr
-		tArr = trimNotNode(list_sprites.activeNode, tArr)
-		clearArr(list_sprites.activeNode)
-		fillArray(tArr,list_sprites.activeNode)
-		tArr = trimNotNode(list_sprites.availNode, tArrAll)
-		clearArr(list_sprites.availNode)
-		fillArray(tArr,list_sprites.availNode)
-	saveRes()
-	return
-
-func getAllNodes(sw):
-	var tArr = []
-	if sw == "skel":
-		tArr = getSkel()
-	else:
-		for el in self.owner.find_children("*","BodyPartNode"):
-			match sw:
-				"names":
-					tArr.append(el.name)
-				"paths":
-					tArr.append(el.get_path())
-				"nodes":
-					tArr.append(el)	
-	return tArr
-
 ## Check for skeletons, the skeleton node name will be the key of a dictionary.
 ## The skeleton key will have a dictionary wich keys are the active actions.
 ## Each key will have an array, each element of wich is filled with a bone name, position and rotation.
@@ -242,6 +274,7 @@ func getSkel():
 			var file = "res://addons/bodypartcontrol/tmpres/" + el.name + "_" + act +".png"
 			if not ResourceLoader.exists(file):
 				screennie("res://addons/bodypartcontrol/tmpres/", el.name + "_" + act)
+	saveRes()
 	return skelArr
 
 ## Take a screenshot of the editor screen of this scene, crop and save it.
@@ -284,5 +317,5 @@ func skelRedraw(arr):
 			tmpArr.clear()
 			for ndx in skel.get_bone_count():
 				tmpArr.append([skel.get_bone(ndx).name, skel.get_bone(ndx).position, skel.get_bone(ndx).rotation])
-			screennie("res://addons/bodypartcontrol/tmpres/", arr[0] + "_" + arr[1])
+			await screennie("res://addons/bodypartcontrol/tmpres/", arr[0] + "_" + arr[1])
 			saveRes()
